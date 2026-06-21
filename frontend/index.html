@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NovaPay — Bank Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  /* ── TOKENS ── */
+  :root {
+    --navy:    #0B1A2E;
+    --navy2:   #112240;
+    --teal:    #00C9A7;
+    --teal2:   #00A98F;
+    --slate:   #8892A4;
+    --silver:  #CBD5E1;
+    --white:   #F8FAFC;
+    --card:    #162032;
+    --error:   #FF6B6B;
+    --warn:    #FFD166;
+    --success: #06D6A0;
+
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body:    'Inter', system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', monospace;
+
+    --r: 14px;
+    --r-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,.35);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── UTILITY ── */
+  .hidden { display: none !important; }
+  .mono { font-family: var(--font-mono); letter-spacing: .04em; }
+  .teal { color: var(--teal); }
+  .err-text { color: var(--error); font-size: .8rem; margin-top: 4px; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; top: 24px; right: 24px; z-index: 999;
+    padding: 14px 20px; border-radius: var(--r-sm);
+    font-size: .9rem; font-weight: 500;
+    transform: translateY(-80px); opacity: 0;
+    transition: all .3s ease;
+    pointer-events: none;
+    max-width: 320px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { background: var(--success); color: var(--navy); }
+  #toast.error   { background: var(--error);   color: #fff; }
+  #toast.info    { background: var(--teal);    color: var(--navy); }
+
+  /* ── WELCOME SCREEN ── */
+  #screen-welcome {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px 20px;
+    background: radial-gradient(ellipse at 60% 30%, #0e2a4a 0%, var(--navy) 70%);
+    text-align: center;
+  }
+  .logo-mark {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--teal), var(--teal2));
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin: 0 auto 24px;
+    box-shadow: 0 0 40px rgba(0,201,167,.25);
+  }
+  #screen-welcome h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  #screen-welcome p {
+    color: var(--slate); font-size: 1.05rem;
+    margin-bottom: 40px; max-width: 400px;
+  }
+  .btn-group { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 26px; border-radius: var(--r-sm);
+    font-family: var(--font-body); font-size: .95rem; font-weight: 600;
+    cursor: pointer; border: none; transition: all .2s;
+    text-decoration: none; white-space: nowrap;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--teal), var(--teal2));
+    color: var(--navy);
+  }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--teal);
+    color: var(--teal);
+  }
+  .btn-outline:hover { background: rgba(0,201,167,.1); }
+  .btn-ghost {
+    background: rgba(255,255,255,.06);
+    color: var(--silver);
+    border: 1px solid rgba(255,255,255,.1);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,.12); }
+  .btn-danger {
+    background: var(--error); color: #fff;
+  }
+  .btn-danger:hover { filter: brightness(1.1); }
+  .btn-sm { padding: 8px 16px; font-size: .85rem; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: var(--r);
+    padding: 28px;
+  }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 18px; }
+  label {
+    display: block; font-size: .8rem; font-weight: 500;
+    color: var(--slate); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em;
+  }
+  input, select {
+    width: 100%; padding: 12px 14px;
+    background: rgba(255,255,255,.06);
+    border: 1.5px solid rgba(255,255,255,.1);
+    border-radius: var(--r-sm);
+    color: var(--white);
+    font-family: var(--font-body); font-size: .95rem;
+    transition: border-color .2s;
+    outline: none;
+  }
+  input:focus, select:focus { border-color: var(--teal); }
+  input::placeholder { color: var(--slate); }
+  select option { background: var(--navy2); }
+
+  /* ── AUTH SCREENS ── */
+  .auth-wrap {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 20px;
+    background: radial-gradient(ellipse at 30% 70%, #0e2a4a 0%, var(--navy) 70%);
+  }
+  .auth-card {
+    width: 100%; max-width: 440px;
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: var(--r);
+    padding: 40px;
+  }
+  .auth-card h2 {
+    font-family: var(--font-display);
+    font-size: 1.8rem; margin-bottom: 6px;
+  }
+  .auth-card .subtitle {
+    color: var(--slate); font-size: .9rem; margin-bottom: 28px;
+  }
+  .auth-footer { text-align: center; margin-top: 20px; font-size: .85rem; color: var(--slate); }
+  .auth-footer a { color: var(--teal); cursor: pointer; text-decoration: underline; }
+
+  /* ── DASHBOARD LAYOUT ── */
+  #screen-dashboard {
+    display: flex; flex-direction: column; min-height: 100vh;
+  }
+
+  /* Topbar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px;
+    background: var(--navy2);
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-display); font-size: 1.3rem;
+  }
+  .topbar-brand span.mark {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--teal), var(--teal2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+  .topbar-user { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), #006eff);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .9rem; color: var(--navy);
+    flex-shrink: 0;
+  }
+  .topbar-user-info { line-height: 1.2; text-align: right; }
+  .topbar-user-info .name { font-weight: 600; font-size: .9rem; }
+  .topbar-user-info .acc  { font-size: .75rem; color: var(--slate); font-family: var(--font-mono); }
+
+  /* Side nav */
+  .dash-body { display: flex; flex: 1; }
+  .sidenav {
+    width: 220px; flex-shrink: 0;
+    background: var(--navy2);
+    border-right: 1px solid rgba(255,255,255,.07);
+    padding: 24px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .sidenav-label {
+    font-size: .68rem; font-weight: 600; color: var(--slate);
+    text-transform: uppercase; letter-spacing: .1em;
+    padding: 4px 12px 8px; margin-top: 12px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: var(--r-sm);
+    cursor: pointer; font-size: .9rem; color: var(--slate);
+    transition: all .15s; border: none; background: none;
+    width: 100%; text-align: left; font-family: var(--font-body);
+  }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: var(--white); }
+  .nav-item.active { background: rgba(0,201,167,.12); color: var(--teal); }
+  .nav-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+
+  /* Main panel */
+  .main-panel {
+    flex: 1; padding: 32px;
+    overflow-y: auto;
+    max-width: 900px;
+  }
+
+  /* ── DASHBOARD HOME ── */
+  .balance-card {
+    background: linear-gradient(135deg, #0e3460 0%, #0a2040 100%);
+    border: 1px solid rgba(0,201,167,.2);
+    border-radius: var(--r);
+    padding: 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-card::after {
+    content: '';
+    position: absolute; right: -40px; top: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,201,167,.15) 0%, transparent 70%);
+  }
+  .balance-label { font-size: .8rem; color: var(--slate); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+  .balance-amount {
+    font-family: var(--font-display); font-size: 2.8rem;
+    color: var(--white); margin-bottom: 20px; line-height: 1;
+  }
+  .balance-amount span { font-size: 1.4rem; color: var(--slate); margin-right: 4px; vertical-align: super; }
+  .balance-meta { display: flex; gap: 32px; flex-wrap: wrap; }
+  .balance-meta-item .lbl { font-size: .72rem; color: var(--slate); text-transform: uppercase; letter-spacing: .06em; }
+  .balance-meta-item .val { font-family: var(--font-mono); font-size: .9rem; color: var(--silver); margin-top: 2px; }
+
+  .quick-actions {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 14px; margin-bottom: 28px;
+  }
+  .qa-btn {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: var(--r-sm);
+    padding: 18px 14px;
+    text-align: center; cursor: pointer;
+    transition: all .2s;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-family: var(--font-body); color: var(--white);
+  }
+  .qa-btn:hover {
+    border-color: var(--teal);
+    background: rgba(0,201,167,.08);
+    transform: translateY(-2px);
+  }
+  .qa-btn .icon { font-size: 1.5rem; }
+  .qa-btn .text { font-size: .8rem; font-weight: 500; }
+
+  .section-title {
+    font-family: var(--font-display); font-size: 1.2rem;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ── TRANSACTION LIST ── */
+  .tx-list { display: flex; flex-direction: column; gap: 10px; }
+  .tx-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: var(--r-sm);
+    padding: 14px 18px;
+  }
+  .tx-icon {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .tx-icon.credit { background: rgba(6,214,160,.15); }
+  .tx-icon.debit  { background: rgba(255,107,107,.15); }
+  .tx-icon.transfer { background: rgba(99,179,237,.15); }
+  .tx-info { flex: 1; }
+  .tx-info .tx-desc { font-size: .9rem; font-weight: 500; }
+  .tx-info .tx-sub  { font-size: .75rem; color: var(--slate); margin-top: 2px; }
+  .tx-amount { font-family: var(--font-mono); font-weight: 600; font-size: .95rem; }
+  .tx-amount.credit   { color: var(--success); }
+  .tx-amount.debit    { color: var(--error); }
+  .tx-amount.transfer { color: #63B3ED; }
+  .tx-empty { text-align: center; color: var(--slate); padding: 32px; font-size: .9rem; }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-box {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: var(--r);
+    padding: 36px; width: 100%; max-width: 460px;
+    box-shadow: var(--shadow);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-box h3 {
+    font-family: var(--font-display); font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+  .modal-box .modal-sub { color: var(--slate); font-size: .85rem; margin-bottom: 24px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
+
+  /* ── PROFILE PAGE ── */
+  .profile-header {
+    display: flex; align-items: center; gap: 18px;
+    margin-bottom: 28px;
+  }
+  .avatar-lg {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), #006eff);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; font-weight: 700; color: var(--navy);
+  }
+  .profile-info h2 { font-family: var(--font-display); font-size: 1.6rem; }
+  .profile-info p  { color: var(--slate); font-size: .85rem; }
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-bottom: 24px;
+  }
+  .info-cell { background: rgba(255,255,255,.04); border-radius: var(--r-sm); padding: 14px 16px; }
+  .info-cell .lbl { font-size: .72rem; color: var(--slate); text-transform: uppercase; letter-spacing: .06em; }
+  .info-cell .val { font-size: .95rem; margin-top: 4px; word-break: break-all; }
+  .info-cell .val.mono { font-family: var(--font-mono); font-size: .85rem; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .sidenav { display: none; }
+    .main-panel { padding: 20px 16px; }
+    .info-grid { grid-template-columns: 1fr; }
+    .balance-amount { font-size: 2.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     WELCOME SCREEN
+══════════════════════════════════════════ -->
+<div id="screen-welcome">
+  <div class="logo-mark">🏦</div>
+  <h1>NovaPay<br/><span class="teal">Bank</span></h1>
+  <p>Secure, modern banking at your fingertips. Manage accounts, transfers and statements — all in one place.</p>
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="showScreen('login')">Sign In</button>
+    <button class="btn btn-outline" onclick="showScreen('register')">Open Account</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     REGISTER SCREEN
+══════════════════════════════════════════ -->
+<div id="screen-register" class="hidden">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Open an Account</h2>
+      <p class="subtitle">Fill in your details — takes under a minute.</p>
+
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="e.g. Muhammad Ali"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" id="reg-age" placeholder="25" min="18"/>
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="reg-gender">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="name@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" id="reg-phone" placeholder="03XX-XXXXXXX"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min 6 characters"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group">
+          <label>4-Digit PIN</label>
+          <input type="number" id="reg-pin" placeholder="1234" max="9999" min="1000"/>
+        </div>
+        <div class="form-group">
+          <label>Initial Balance (PKR)</label>
+          <input type="number" id="reg-balance" placeholder="5000" min="0"/>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%" onclick="registerCustomer()">Create Account</button>
+      <div class="auth-footer">Already have an account? <a onclick="showScreen('login')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════ -->
+<div id="screen-login" class="hidden">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Welcome Back</h2>
+      <p class="subtitle">Sign in with your phone number and password.</p>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" id="login-phone" placeholder="03XX-XXXXXXX"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Your password"/>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="loginCustomer()">Sign In</button>
+      <div class="auth-footer">No account yet? <a onclick="showScreen('register')">Open one free</a></div>
+      <div class="auth-footer" style="margin-top:6px"><a onclick="showScreen('welcome')">← Back to home</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════════ -->
+<div id="screen-dashboard" class="hidden">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="mark">🏦</span>
+      NovaPay
+    </div>
+    <div class="topbar-user">
+      <div class="topbar-user-info">
+        <div class="name" id="tb-name">—</div>
+        <div class="acc mono" id="tb-acc">—</div>
+      </div>
+      <div class="avatar" id="tb-avatar">?</div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="dash-body">
+    <!-- Side nav -->
+    <nav class="sidenav">
+      <button class="nav-item active" onclick="showPanel('home')" id="nav-home">
+        <span class="nav-icon">🏠</span> Home
+      </button>
+      <button class="nav-item" onclick="showPanel('transfer')" id="nav-transfer">
+        <span class="nav-icon">↗️</span> Transfer
+      </button>
+      <button class="nav-item" onclick="showPanel('deposit')" id="nav-deposit">
+        <span class="nav-icon">💳</span> Deposit
+      </button>
+      <button class="nav-item" onclick="showPanel('withdraw')" id="nav-withdraw">
+        <span class="nav-icon">💸</span> Withdraw
+      </button>
+      <button class="nav-item" onclick="showPanel('statement')" id="nav-statement">
+        <span class="nav-icon">📄</span> Statement
+      </button>
+
+      <div class="sidenav-label">Settings</div>
+      <button class="nav-item" onclick="showPanel('profile')" id="nav-profile">
+        <span class="nav-icon">👤</span> Profile
+      </button>
+      <button class="nav-item" onclick="showPanel('security')" id="nav-security">
+        <span class="nav-icon">🔒</span> Security
+      </button>
+    </nav>
+
+    <!-- Main panel -->
+    <div class="main-panel">
+
+      <!-- HOME -->
+      <div id="panel-home">
+        <div class="balance-card">
+          <div class="balance-label">Available Balance</div>
+          <div class="balance-amount" id="bal-display"><span>PKR</span><span id="bal-num">0.00</span></div>
+          <div class="balance-meta">
+            <div class="balance-meta-item">
+              <div class="lbl">Account No.</div>
+              <div class="val" id="info-accnum">—</div>
+            </div>
+            <div class="balance-meta-item">
+              <div class="lbl">IBAN</div>
+              <div class="val" id="info-iban">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Quick Actions</div>
+        <div class="quick-actions">
+          <button class="qa-btn" onclick="showPanel('transfer')"><div class="icon">↗️</div><div class="text">Transfer</div></button>
+          <button class="qa-btn" onclick="showPanel('deposit')"><div class="icon">💳</div><div class="text">Deposit</div></button>
+          <button class="qa-btn" onclick="showPanel('withdraw')"><div class="icon">💸</div><div class="text">Withdraw</div></button>
+          <button class="qa-btn" onclick="showPanel('statement')"><div class="icon">📄</div><div class="text">Statement</div></button>
+        </div>
+
+        <div class="section-title">Recent Transactions</div>
+        <div id="home-tx-list" class="tx-list">
+          <div class="tx-empty">No transactions yet.</div>
+        </div>
+      </div>
+
+      <!-- TRANSFER -->
+      <div id="panel-transfer" class="hidden">
+        <div class="section-title">💸 Bank Transfer</div>
+        <div class="card" style="max-width:500px">
+          <div class="form-group">
+            <label>Receiver's Account Number</label>
+            <input type="text" id="tr-accnum" placeholder="e.g. ACC2"/>
+          </div>
+          <div class="form-group">
+            <label>Amount (PKR)</label>
+            <input type="number" id="tr-amount" placeholder="1000" min="1"/>
+          </div>
+          <div class="form-group">
+            <label>Your 4-Digit PIN</label>
+            <input type="password" id="tr-pin" placeholder="••••" maxlength="4"/>
+          </div>
+          <button class="btn btn-primary" onclick="transferMoney()">Send Money ↗</button>
+        </div>
+      </div>
+
+      <!-- DEPOSIT -->
+      <div id="panel-deposit" class="hidden">
+        <div class="section-title">💳 Deposit Cash</div>
+        <div class="card" style="max-width:400px">
+          <div class="form-group">
+            <label>Amount to Deposit (PKR)</label>
+            <input type="number" id="dep-amount" placeholder="5000" min="1"/>
+          </div>
+          <button class="btn btn-primary" onclick="depositMoney()">Deposit ✓</button>
+        </div>
+      </div>
+
+      <!-- WITHDRAW -->
+      <div id="panel-withdraw" class="hidden">
+        <div class="section-title">🏧 Withdraw Cash</div>
+        <div class="card" style="max-width:400px">
+          <div class="form-group">
+            <label>Amount to Withdraw (PKR)</label>
+            <input type="number" id="wd-amount" placeholder="1000" min="1"/>
+          </div>
+          <div class="form-group">
+            <label>Your 4-Digit PIN</label>
+            <input type="password" id="wd-pin" placeholder="••••" maxlength="4"/>
+          </div>
+          <button class="btn btn-primary" onclick="withdrawMoney()">Withdraw</button>
+        </div>
+      </div>
+
+      <!-- STATEMENT -->
+      <div id="panel-statement" class="hidden">
+        <div class="section-title">📄 Account Statement</div>
+        <div id="stmt-list" class="tx-list">
+          <div class="tx-empty">No transactions yet.</div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div id="panel-profile" class="hidden">
+        <div class="section-title">👤 My Profile</div>
+        <div class="profile-header">
+          <div class="avatar-lg" id="prof-avatar">?</div>
+          <div class="profile-info">
+            <h2 id="prof-name">—</h2>
+            <p id="prof-email">—</p>
+          </div>
+        </div>
+        <div class="info-grid" id="prof-grid"></div>
+
+        <div class="section-title" style="margin-top:8px">Edit Information</div>
+        <div class="card" style="max-width:480px">
+          <div class="form-group">
+            <label>New Name</label>
+            <input type="text" id="edit-name" placeholder="Full name"/>
+          </div>
+          <div class="form-group">
+            <label>New Email</label>
+            <input type="email" id="edit-email" placeholder="name@example.com"/>
+          </div>
+          <div class="form-group">
+            <label>New Phone Number</label>
+            <input type="tel" id="edit-phone" placeholder="03XX-XXXXXXX"/>
+          </div>
+          <button class="btn btn-primary" onclick="editInfo()">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- SECURITY -->
+      <div id="panel-security" class="hidden">
+        <div class="section-title">🔒 Security</div>
+        <div style="display:flex;flex-direction:column;gap:24px;max-width:480px">
+          <!-- Change Password -->
+          <div class="card">
+            <h3 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:16px">Change Password</h3>
+            <div class="form-group">
+              <label>Current Password</label>
+              <input type="password" id="cp-old" placeholder="Current password"/>
+            </div>
+            <div class="form-group">
+              <label>New Password</label>
+              <input type="password" id="cp-new" placeholder="New password"/>
+            </div>
+            <div class="form-group">
+              <label>Confirm New Password</label>
+              <input type="password" id="cp-confirm" placeholder="Repeat new password"/>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="changePassword()">Update Password</button>
+          </div>
+
+          <!-- Change PIN -->
+          <div class="card">
+            <h3 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:16px">Change PIN</h3>
+            <div class="form-group">
+              <label>Current PIN</label>
+              <input type="password" id="pin-old" placeholder="••••" maxlength="4"/>
+            </div>
+            <div class="form-group">
+              <label>New PIN</label>
+              <input type="password" id="pin-new" placeholder="••••" maxlength="4"/>
+            </div>
+            <div class="form-group">
+              <label>Confirm New PIN</label>
+              <input type="password" id="pin-confirm" placeholder="••••" maxlength="4"/>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="changePIN()">Update PIN</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-panel -->
+  </div><!-- /dash-body -->
+</div><!-- /screen-dashboard -->
+
+
+<script>
+/* ══════════════════════════════════════════
+   STATE  (mirrors Java ArrayList in memory)
+══════════════════════════════════════════ */
+const backendPath = "http://localhost:8080";
+const customers    = [];   // { name, age, gender, email, phone, password, pin, balance, accountNumber, iban }
+const transactions = [];   // { senderName, receiverName, amount, type }
+let currentCustomer = null;
+
+/* ── Screen navigation ── */
+function showScreen(name) {
+  ['welcome','register','login','dashboard'].forEach(s => {
+    document.getElementById('screen-'+s).classList.toggle('hidden', s !== name);
+  });
+  if (name === 'dashboard') refreshDashboard();
+}
+
+/* ── Panel navigation ── */
+const panels = ['home','transfer','deposit','withdraw','statement','profile','security'];
+function showPanel(name) {
+  panels.forEach(p => {
+    document.getElementById('panel-'+p).classList.toggle('hidden', p !== name);
+    const nav = document.getElementById('nav-'+p);
+    if (nav) nav.classList.toggle('active', p === name);
+  });
+  if (name === 'statement') renderStatement();
+  if (name === 'profile')   renderProfile();
+  if (name === 'home')      renderHomeTx();
+}
+
+/* ── Toast ── */
+let toastTimer;
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+/* ══════════════════════════════════════════
+   REGISTER
+══════════════════════════════════════════ */
+function registerCustomer() {
+  const name    = document.getElementById('reg-name').value.trim();
+  const age     = parseInt(document.getElementById('reg-age').value);
+  const gender  = document.getElementById('reg-gender').value;
+  const email   = document.getElementById('reg-email').value.trim();
+  const phone   = document.getElementById('reg-phone').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const pin     = parseInt(document.getElementById('reg-pin').value);
+  const balance = parseFloat(document.getElementById('reg-balance').value) || 0;
+
+  if (!name || !age || !gender || !email || !phone || !password || isNaN(pin)) {
+    toast('Please fill in all fields.','error'); return;
+  }
+  if (password.length < 6) { toast('Password must be at least 6 characters.','error'); return; }
+  if (pin < 1000 || pin > 9999) { toast('PIN must be exactly 4 digits.','error'); return; }
+  if (age < 18) { toast('You must be at least 18 years old.','error'); return; }
+  if (customers.find(c => c.phone === phone)) { toast('Phone number already registered.','error'); return; }
+
+  // const accountNumber = 'ACC' + (customers.length + 1);
+  // const iban = 'PK00BANK' + (customers.length + 1);
+
+
+  (async () => {
+  const res = await fetch(`${backendPath}/api/register`, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        name,
+        age,
+        gender,
+        email,
+        number: phone,
+        password,
+        pin,
+        balance
+    })
+  });
+  console.log("Hello world");
+  const msg = await res.text();
+
+  if (msg == "success") {
+
+  toast(`Account created! Your Account No: ${accountNumber}`,'success');
+  // Clear form
+  ['reg-name','reg-age','reg-email','reg-phone','reg-password','reg-pin','reg-balance'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('reg-gender').value = '';
+  // customers.push({ name, age, gender, email, phone, password, pin, balance, accountNumber, iban });
+
+  showScreen('login');
+
+  }
+  })();
+}
+
+/* ══════════════════════════════════════════
+   LOGIN
+══════════════════════════════════════════ */
+function loginCustomer() {
+  const phone    = document.getElementById('login-phone').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  const c = customers.find(x => x.phone === phone && x.password === password);
+  if (!c) { toast('Incorrect phone number or password.','error'); return; }
+
+  currentCustomer = c;
+  toast(`Welcome back, ${c.name}!`,'success');
+  document.getElementById('login-phone').value = '';
+  document.getElementById('login-password').value = '';
+  showScreen('dashboard');
+}
+
+/* ══════════════════════════════════════════
+   LOGOUT
+══════════════════════════════════════════ */
+function logout() {
+  const name = currentCustomer?.name;
+  currentCustomer = null;
+  toast(`${name} signed out.`,'info');
+  showScreen('welcome');
+}
+
+/* ══════════════════════════════════════════
+   REFRESH DASHBOARD
+══════════════════════════════════════════ */
+function refreshDashboard() {
+  if (!currentCustomer) return;
+  document.getElementById('tb-name').textContent = currentCustomer.name;
+  document.getElementById('tb-acc').textContent  = currentCustomer.accountNumber;
+  document.getElementById('tb-avatar').textContent = currentCustomer.name[0].toUpperCase();
+  updateBalanceDisplay();
+  renderHomeTx();
+}
+
+function updateBalanceDisplay() {
+  document.getElementById('bal-num').textContent = currentCustomer.balance.toLocaleString('en-PK',{minimumFractionDigits:2});
+  document.getElementById('info-accnum').textContent = currentCustomer.accountNumber;
+  document.getElementById('info-iban').textContent   = currentCustomer.iban;
+}
+
+/* ══════════════════════════════════════════
+   TRANSFER
+══════════════════════════════════════════ */
+function transferMoney() {
+  const accNum = document.getElementById('tr-accnum').value.trim();
+  const amount = parseFloat(document.getElementById('tr-amount').value);
+  const pin    = parseInt(document.getElementById('tr-pin').value);
+
+  if (!accNum || isNaN(amount) || isNaN(pin)) { toast('Fill in all fields.','error'); return; }
+  if (amount <= 0) { toast('Enter a valid amount.','error'); return; }
+  if (currentCustomer.pin !== pin) { toast('Incorrect PIN.','error'); return; }
+  if (accNum === currentCustomer.accountNumber) { toast('You cannot transfer to your own account.','error'); return; }
+
+  const receiver = customers.find(c => c.accountNumber === accNum);
+  if (!receiver) { toast('Account not found.','error'); return; }
+  if (currentCustomer.balance < amount) { toast('Insufficient balance.','error'); return; }
+
+  currentCustomer.balance -= amount;
+  receiver.balance += amount;
+  transactions.push({ senderName: currentCustomer.name, receiverName: receiver.name, amount, type:'Bank Transfer' });
+
+  updateBalanceDisplay();
+  toast(`PKR ${amount.toLocaleString()} sent to ${receiver.name}.`,'success');
+  ['tr-accnum','tr-amount','tr-pin'].forEach(id => document.getElementById(id).value='');
+}
+
+/* ══════════════════════════════════════════
+   DEPOSIT
+══════════════════════════════════════════ */
+function depositMoney() {
+  const amount = parseFloat(document.getElementById('dep-amount').value);
+  if (isNaN(amount) || amount <= 0) { toast('Enter a valid amount.','error'); return; }
+
+  currentCustomer.balance += amount;
+  transactions.push({ senderName:'Cash Deposit', receiverName: currentCustomer.name, amount, type:'Deposit' });
+
+  updateBalanceDisplay();
+  toast(`PKR ${amount.toLocaleString()} deposited. New balance: PKR ${currentCustomer.balance.toLocaleString('en-PK',{minimumFractionDigits:2})}.`,'success');
+  document.getElementById('dep-amount').value = '';
+}
+
+/* ══════════════════════════════════════════
+   WITHDRAW
+══════════════════════════════════════════ */
+function withdrawMoney() {
+  const amount = parseFloat(document.getElementById('wd-amount').value);
+  const pin    = parseInt(document.getElementById('wd-pin').value);
+
+  if (isNaN(amount) || amount <= 0) { toast('Enter a valid amount.','error'); return; }
+  if (isNaN(pin)) { toast('Enter your PIN.','error'); return; }
+  if (currentCustomer.balance < amount) { toast('Insufficient balance.','error'); return; }
+  if (currentCustomer.pin !== pin) { toast('Incorrect PIN.','error'); return; }
+
+  currentCustomer.balance -= amount;
+  transactions.push({ senderName: currentCustomer.name, receiverName:'Cash Withdrawal', amount, type:'Withdraw' });
+
+  updateBalanceDisplay();
+  toast(`PKR ${amount.toLocaleString()} withdrawn. Remaining: PKR ${currentCustomer.balance.toLocaleString('en-PK',{minimumFractionDigits:2})}.`,'success');
+  ['wd-amount','wd-pin'].forEach(id => document.getElementById(id).value='');
+}
+
+/* ══════════════════════════════════════════
+   STATEMENT
+══════════════════════════════════════════ */
+function renderStatement() {
+  const myTx = transactions.filter(t =>
+    t.senderName === currentCustomer.name || t.receiverName === currentCustomer.name
+  );
+  const el = document.getElementById('stmt-list');
+  el.innerHTML = myTx.length === 0
+    ? '<div class="tx-empty">No transactions yet.</div>'
+    : myTx.map(t => txHTML(t)).join('');
+}
+
+function renderHomeTx() {
+  const myTx = transactions
+    .filter(t => t.senderName === currentCustomer?.name || t.receiverName === currentCustomer?.name)
+    .slice(-5).reverse();
+  const el = document.getElementById('home-tx-list');
+  el.innerHTML = myTx.length === 0
+    ? '<div class="tx-empty">No transactions yet.</div>'
+    : myTx.map(t => txHTML(t)).join('');
+}
+
+function txHTML(t) {
+  const isDeposit  = t.type === 'Deposit';
+  const isWithdraw = t.type === 'Withdraw';
+  const isCredit   = t.receiverName === currentCustomer?.name && !isWithdraw;
+  const cls        = isDeposit ? 'credit' : isWithdraw ? 'debit' : isCredit ? 'credit' : 'transfer';
+  const icons      = { credit:'⬇️', debit:'⬆️', transfer:'↔️' };
+  const sign       = isDeposit ? '+' : isWithdraw ? '-' : isCredit ? '+' : '-';
+  const desc       = t.type === 'Deposit'   ? 'Cash Deposit'
+                   : t.type === 'Withdraw'  ? 'Cash Withdrawal'
+                   : isCredit               ? `Received from ${t.senderName}`
+                   :                          `Sent to ${t.receiverName}`;
+  return `
+  <div class="tx-item">
+    <div class="tx-icon ${cls}">${icons[cls]||'↔️'}</div>
+    <div class="tx-info">
+      <div class="tx-desc">${desc}</div>
+      <div class="tx-sub">${t.type}</div>
+    </div>
+    <div class="tx-amount ${cls}">${sign}PKR ${t.amount.toLocaleString('en-PK',{minimumFractionDigits:2})}</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   PROFILE
+══════════════════════════════════════════ */
+function renderProfile() {
+  const c = currentCustomer;
+  document.getElementById('prof-avatar').textContent = c.name[0].toUpperCase();
+  document.getElementById('prof-name').textContent  = c.name;
+  document.getElementById('prof-email').textContent = c.email;
+  document.getElementById('prof-grid').innerHTML = `
+    <div class="info-cell"><div class="lbl">Age</div><div class="val">${c.age}</div></div>
+    <div class="info-cell"><div class="lbl">Gender</div><div class="val">${c.gender}</div></div>
+    <div class="info-cell"><div class="lbl">Phone</div><div class="val">${c.phone}</div></div>
+    <div class="info-cell"><div class="lbl">Email</div><div class="val">${c.email}</div></div>
+    <div class="info-cell"><div class="lbl">Account No.</div><div class="val mono">${c.accountNumber}</div></div>
+    <div class="info-cell"><div class="lbl">IBAN</div><div class="val mono">${c.iban}</div></div>
+  `;
+  document.getElementById('edit-name').value  = c.name;
+  document.getElementById('edit-email').value = c.email;
+  document.getElementById('edit-phone').value = c.phone;
+}
+
+function editInfo() {
+  const name  = document.getElementById('edit-name').value.trim();
+  const email = document.getElementById('edit-email').value.trim();
+  const phone = document.getElementById('edit-phone').value.trim();
+  if (!name || !email || !phone) { toast('Fill all fields.','error'); return; }
+
+  currentCustomer.name  = name;
+  currentCustomer.email = email;
+  currentCustomer.phone = phone;
+
+  refreshDashboard();
+  renderProfile();
+  toast('Information updated.','success');
+}
+
+/* ══════════════════════════════════════════
+   CHANGE PASSWORD
+══════════════════════════════════════════ */
+function changePassword() {
+  const oldPwd  = document.getElementById('cp-old').value;
+  const newPwd  = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+
+  if (!oldPwd || !newPwd || !confirm) { toast('Fill all fields.','error'); return; }
+  if (currentCustomer.password !== oldPwd) { toast('Current password is incorrect.','error'); return; }
+  if (newPwd.length < 6) { toast('New password must be at least 6 characters.','error'); return; }
+  if (newPwd !== confirm) { toast('Passwords do not match.','error'); return; }
+
+  currentCustomer.password = newPwd;
+  ['cp-old','cp-new','cp-confirm'].forEach(id => document.getElementById(id).value='');
+  toast('Password changed successfully.','success');
+}
+
+/* ══════════════════════════════════════════
+   CHANGE PIN
+══════════════════════════════════════════ */
+function changePIN() {
+  const oldPin  = parseInt(document.getElementById('pin-old').value);
+  const newPin  = parseInt(document.getElementById('pin-new').value);
+  const confirm = parseInt(document.getElementById('pin-confirm').value);
+
+  if (isNaN(oldPin)||isNaN(newPin)||isNaN(confirm)) { toast('Fill all fields.','error'); return; }
+  if (currentCustomer.pin !== oldPin) { toast('Current PIN is incorrect.','error'); return; }
+  if (newPin < 1000 || newPin > 9999) { toast('New PIN must be 4 digits.','error'); return; }
+  if (newPin !== confirm) { toast('PINs do not match.','error'); return; }
+
+  currentCustomer.pin = newPin;
+  ['pin-old','pin-new','pin-confirm'].forEach(id => document.getElementById(id).value='');
+  toast('PIN changed successfully.','success');
+}
+</script>
+</body>
+</html>
