@@ -26,7 +26,7 @@ public class Customer {
     @Column(nullable = false)
     private String password;
 
-    private int pin;
+    private String pin;
 
     private double balance;
 
@@ -42,7 +42,7 @@ public class Customer {
 
     // Parameterized Constructor
     public Customer(String name, int age, String gender, String email,
-                    String phoneNumber, String password, int pin,
+                    String phoneNumber, String password, String pin,
                     double balance, String accountNumber, String iban) {
         this.name = name;
         this.age = age;
@@ -114,11 +114,11 @@ public class Customer {
         this.password = password;
     }
 
-    public int getPin() {
+    public String getPin() {
         return pin;
     }
 
-    public void setPin(int pin) {
+    public void setPin(String pin) {
         this.pin = pin;
     }
 

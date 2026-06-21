@@ -30,7 +30,7 @@ public class CustomerService {
         if (request.getPassword() == null || request.getPassword().length() < 6) {
             throw new IllegalArgumentException("Password must be at least 6 characters.");
         }
-        if (request.getPin() < 1000 || request.getPin() > 9999) {
+        if (request.getPin() == null || !request.getPin().matches("\\d{4}")) {
             throw new IllegalArgumentException("PIN must be exactly 4 digits.");
         }
         if (request.getAge() < 18) {
@@ -127,13 +127,13 @@ public class CustomerService {
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found."));
 
-        if (customer.getPin() != request.getOldPin()) {
+        if (!customer.getPin().equals(request.getOldPin())) {
             throw new IllegalArgumentException("Current PIN is incorrect.");
         }
-        if (request.getNewPin() < 1000 || request.getNewPin() > 9999) {
+        if (request.getNewPin() == null || !request.getNewPin().matches("\\d{4}")) {
             throw new IllegalArgumentException("New PIN must be 4 digits.");
         }
-        if (request.getNewPin() != request.getConfirmPin()) {
+        if (!request.getNewPin().equals(request.getConfirmPin())) {
             throw new IllegalArgumentException("PINs do not match.");
         }
 

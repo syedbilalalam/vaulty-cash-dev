@@ -13,7 +13,7 @@ export default function SecurityPanel() {
   };
 
   const handleChangePin = async () => {
-    const ok = await changePIN(parseInt(pin.old), parseInt(pin.new), parseInt(pin.confirm));
+    const ok = await changePIN(pin.old, pin.new, pin.confirm);
     if (ok) setPin({ old: '', new: '', confirm: '' });
   };
 

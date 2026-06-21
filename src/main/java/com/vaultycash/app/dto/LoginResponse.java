@@ -7,7 +7,7 @@ public class LoginResponse {
     private String gender;
     private String email;
     private String phone;
-    private int pin;
+    private String pin;
     private double balance;
     private String accountNumber;
     private String iban;
@@ -15,7 +15,7 @@ public class LoginResponse {
     public LoginResponse() {}
 
     public LoginResponse(Long id, String name, int age, String gender, String email,
-                         String phone, int pin, double balance, String accountNumber, String iban) {
+                         String phone, String pin, double balance, String accountNumber, String iban) {
         this.id = id;
         this.name = name;
         this.age = age;
@@ -46,8 +46,8 @@ public class LoginResponse {
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    public int getPin() { return pin; }
-    public void setPin(int pin) { this.pin = pin; }
+    public String getPin() { return pin; }
+    public void setPin(String pin) { this.pin = pin; }
 
     public double getBalance() { return balance; }
     public void setBalance(double balance) { this.balance = balance; }

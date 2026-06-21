@@ -7,7 +7,7 @@ public class RegisterRequest {
     private String email;
     private String phone;
     private String password;
-    private int pin;
+    private String pin;
     private double balance;
 
     public String getName() { return name; }
@@ -28,8 +28,8 @@ public class RegisterRequest {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public int getPin() { return pin; }
-    public void setPin(int pin) { this.pin = pin; }
+    public String getPin() { return pin; }
+    public void setPin(String pin) { this.pin = pin; }
 
     public double getBalance() { return balance; }
     public void setBalance(double balance) { this.balance = balance; }

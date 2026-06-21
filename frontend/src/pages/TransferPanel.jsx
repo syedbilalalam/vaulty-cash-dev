@@ -8,7 +8,7 @@ export default function TransferPanel() {
   const [pin, setPin] = useState('');
 
   const handleTransfer = async () => {
-    const ok = await transferMoney(accNum, parseFloat(amount), parseInt(pin));
+    const ok = await transferMoney(accNum, parseFloat(amount), pin);
     if (ok) { setAccNum(''); setAmount(''); setPin(''); }
   };
 

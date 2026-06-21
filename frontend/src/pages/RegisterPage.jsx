@@ -14,7 +14,7 @@ export default function RegisterPage() {
     registerCustomer({
       ...form,
       age: parseInt(form.age),
-      pin: parseInt(form.pin),
+      pin: form.pin,
       balance: parseFloat(form.balance),
     });
   };
@@ -62,7 +62,7 @@ export default function RegisterPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div className="form-group">
             <label>4-Digit PIN</label>
-            <input type="number" placeholder="1234" max="9999" min="1000" value={form.pin} onChange={set('pin')} />
+            <input type="password" placeholder="1234" maxLength="4" value={form.pin} onChange={set('pin')} />
           </div>
           <div className="form-group">
             <label>Initial Balance (PKR)</label>

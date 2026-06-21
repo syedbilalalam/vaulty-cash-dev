@@ -63,7 +63,7 @@ public class TransactionService {
         if (customer.getBalance() < request.getAmount()) {
             throw new IllegalArgumentException("Insufficient balance.");
         }
-        if (customer.getPin() != request.getPin()) {
+        if (!customer.getPin().equals(request.getPin())) {
             throw new IllegalArgumentException("Incorrect PIN.");
         }
 
@@ -94,7 +94,7 @@ public class TransactionService {
         if (request.getAmount() <= 0) {
             throw new IllegalArgumentException("Enter a valid amount.");
         }
-        if (sender.getPin() != request.getPin()) {
+        if (!sender.getPin().equals(request.getPin())) {
             throw new IllegalArgumentException("Incorrect PIN.");
         }
 

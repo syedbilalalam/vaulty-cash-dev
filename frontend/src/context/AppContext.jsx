@@ -51,12 +51,12 @@ export function AppProvider({ children }) {
       showToast('Please fill in all fields.', 'error'); return;
     }
     if (password.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
-    if (pin < 1000 || pin > 9999) { showToast('PIN must be exactly 4 digits.', 'error'); return; }
+    if (!/^\d{4}$/.test(pin)) { showToast('PIN must be exactly 4 digits.', 'error'); return; }
     if (age < 18) { showToast('You must be at least 18 years old.', 'error'); return; }
 
     const res = await apiCall('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, age: Number(age), gender, email, phone, password, pin: Number(pin), balance: Number(balance) || 0 }),
+      body: JSON.stringify({ name, age: Number(age), gender, email, phone, password, pin: pin.toString(), balance: Number(balance) || 0 }),
     });
 
     if (res.success) {
@@ -90,7 +90,7 @@ export function AppProvider({ children }) {
   }, [currentCustomer, showToast, showScreen]);
 
   const transferMoney = useCallback(async (accNum, amount, pin) => {
-    if (!accNum || isNaN(amount) || isNaN(pin)) { showToast('Fill in all fields.', 'error'); return false; }
+    if (!accNum || isNaN(amount) || !pin) { showToast('Fill in all fields.', 'error'); return false; }
     if (amount <= 0) { showToast('Enter a valid amount.', 'error'); return false; }
 
     const res = await apiCall('/transaction/transfer', {
@@ -99,7 +99,7 @@ export function AppProvider({ children }) {
         senderId: currentCustomer.id,
         receiverAccountNumber: accNum,
         amount: Number(amount),
-        pin: Number(pin),
+        pin: pin.toString(),
       }),
     });
 
@@ -133,11 +133,11 @@ export function AppProvider({ children }) {
 
   const withdrawMoney = useCallback(async (amount, pin) => {
     if (isNaN(amount) || amount <= 0) { showToast('Enter a valid amount.', 'error'); return false; }
-    if (isNaN(pin)) { showToast('Enter your PIN.', 'error'); return false; }
+    if (!pin) { showToast('Enter your PIN.', 'error'); return false; }
 
     const res = await apiCall('/transaction/withdraw', {
       method: 'POST',
-      body: JSON.stringify({ customerId: currentCustomer.id, amount: Number(amount), pin: Number(pin) }),
+      body: JSON.stringify({ customerId: currentCustomer.id, amount: Number(amount), pin: pin.toString() }),
     });
 
     if (res.success) {
@@ -170,11 +170,11 @@ export function AppProvider({ children }) {
   }, [currentCustomer, showToast, apiCall]);
 
   const changePIN = useCallback(async (oldPin, newPin, confirm) => {
-    if (isNaN(oldPin) || isNaN(newPin) || isNaN(confirm)) { showToast('Fill all fields.', 'error'); return false; }
+    if (!oldPin || !newPin || !confirm) { showToast('Fill all fields.', 'error'); return false; }
 
     const res = await apiCall(`/account/${currentCustomer.id}/pin`, {
       method: 'PUT',
-      body: JSON.stringify({ oldPin: Number(oldPin), newPin: Number(newPin), confirmPin: Number(confirm) }),
+      body: JSON.stringify({ oldPin: oldPin.toString(), newPin: newPin.toString(), confirmPin: confirm.toString() }),
     });
 
     if (res.success) {

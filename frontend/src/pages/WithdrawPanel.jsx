@@ -7,7 +7,7 @@ export default function WithdrawPanel() {
   const [pin, setPin] = useState('');
 
   const handleWithdraw = async () => {
-    const ok = await withdrawMoney(parseFloat(amount), parseInt(pin));
+    const ok = await withdrawMoney(parseFloat(amount), pin);
     if (ok) { setAmount(''); setPin(''); }
   };
 
