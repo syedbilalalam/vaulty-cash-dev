@@ -5,6 +5,7 @@ import com.vaultycash.app.model.Customer;
 import com.vaultycash.app.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.mindrot.jbcrypt.BCrypt;
 
 @Service
 public class CustomerService {
@@ -51,7 +52,7 @@ public class CustomerService {
                 request.getGender(),
                 request.getEmail(),
                 request.getPhone(),
-                request.getPassword(),
+                BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()),
                 request.getPin(),
                 request.getBalance(),
                 accountNumber,
@@ -67,7 +68,7 @@ public class CustomerService {
         Customer customer = customerRepository.findByPhoneNumber(request.getPhone())
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect phone number or password."));
 
-        if (!customer.getPassword().equals(request.getPassword())) {
+        if (!BCrypt.checkpw(request.getPassword(), customer.getPassword())) {
             throw new IllegalArgumentException("Incorrect phone number or password.");
         }
 
@@ -108,7 +109,7 @@ public class CustomerService {
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found."));
 
-        if (!customer.getPassword().equals(request.getOldPassword())) {
+        if (!BCrypt.checkpw(request.getOldPassword(), customer.getPassword())) {
             throw new IllegalArgumentException("Current password is incorrect.");
         }
         if (request.getNewPassword() == null || request.getNewPassword().length() < 6) {
@@ -118,7 +119,7 @@ public class CustomerService {
             throw new IllegalArgumentException("Passwords do not match.");
         }
 
-        customer.setPassword(request.getNewPassword());
+        customer.setPassword(BCrypt.hashpw(request.getNewPassword(), BCrypt.gensalt()));
         customerRepository.save(customer);
     }
 
