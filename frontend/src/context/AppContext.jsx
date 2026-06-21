@@ -47,7 +47,7 @@ export function AppProvider({ children }) {
 
   const registerCustomer = useCallback(async (data) => {
     const { name, age, gender, email, phone, password, pin, balance } = data;
-    if (!name || !age || !gender || !email || !phone || !password || !pin) {
+    if (!name?.trim() || !age || !gender?.trim() || !email?.trim() || !phone?.trim() || !password?.trim() || pin === '' || pin === undefined || pin === null) {
       showToast('Please fill in all fields.', 'error'); return;
     }
     if (password.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
