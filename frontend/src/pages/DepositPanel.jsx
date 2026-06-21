@@ -5,8 +5,8 @@ export default function DepositPanel() {
   const { depositMoney } = useApp();
   const [amount, setAmount] = useState('');
 
-  const handleDeposit = () => {
-    const ok = depositMoney(parseFloat(amount));
+  const handleDeposit = async () => {
+    const ok = await depositMoney(parseFloat(amount));
     if (ok) setAmount('');
   };
 

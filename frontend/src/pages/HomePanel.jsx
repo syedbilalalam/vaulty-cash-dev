@@ -1,9 +1,14 @@
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { TransactionList } from '../components/TransactionList';
 
 export default function HomePanel() {
   const { currentCustomer, setActivePanel, getMyTransactions } = useApp();
-  const myTx = getMyTransactions().slice(-5).reverse();
+  const [myTx, setMyTx] = useState([]);
+
+  useEffect(() => {
+    getMyTransactions().then(data => setMyTx((data || []).slice(-5).reverse()));
+  }, [getMyTransactions]);
 
   return (
     <div>

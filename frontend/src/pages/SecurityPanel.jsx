@@ -7,13 +7,13 @@ export default function SecurityPanel() {
   const [pwd, setPwd] = useState({ old: '', new: '', confirm: '' });
   const [pin, setPin] = useState({ old: '', new: '', confirm: '' });
 
-  const handleChangePwd = () => {
-    const ok = changePassword(pwd.old, pwd.new, pwd.confirm);
+  const handleChangePwd = async () => {
+    const ok = await changePassword(pwd.old, pwd.new, pwd.confirm);
     if (ok) setPwd({ old: '', new: '', confirm: '' });
   };
 
-  const handleChangePin = () => {
-    const ok = changePIN(parseInt(pin.old), parseInt(pin.new), parseInt(pin.confirm));
+  const handleChangePin = async () => {
+    const ok = await changePIN(parseInt(pin.old), parseInt(pin.new), parseInt(pin.confirm));
     if (ok) setPin({ old: '', new: '', confirm: '' });
   };
 
