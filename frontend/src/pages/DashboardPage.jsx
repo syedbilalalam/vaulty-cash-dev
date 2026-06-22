@@ -4,6 +4,7 @@ import TransferPanel from './TransferPanel';
 import DepositPanel from './DepositPanel';
 import WithdrawPanel from './WithdrawPanel';
 import StatementPanel from './StatementPanel';
+import VirtualCardPanel from './VirtualCardPanel';
 import ProfilePanel from './ProfilePanel';
 import SecurityPanel from './SecurityPanel';
 
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
   { id: 'deposit',   icon: '💳', label: 'Deposit' },
   { id: 'withdraw',  icon: '💸', label: 'Withdraw' },
   { id: 'statement', icon: '📄', label: 'Statement' },
+  { id: 'card',      icon: '🏧', label: 'Virtual Card' },
 ];
 
 const SETTINGS_ITEMS = [
@@ -26,6 +28,7 @@ const PANEL_MAP = {
   deposit:   <DepositPanel />,
   withdraw:  <WithdrawPanel />,
   statement: <StatementPanel />,
+  card:      <VirtualCardPanel />,
   profile:   <ProfilePanel />,
   security:  <SecurityPanel />,
 };

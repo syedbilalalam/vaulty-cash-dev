@@ -36,6 +36,12 @@ public class Customer {
     @Column(nullable = false, unique = true)
     private String iban;
 
+    private String cardNumber;
+
+    private String cvv;
+
+    private String cardExpiry;
+
     // Default Constructor
     public Customer() {
     }
@@ -43,7 +49,8 @@ public class Customer {
     // Parameterized Constructor
     public Customer(String name, int age, String gender, String email,
                     String phoneNumber, String password, String pin,
-                    double balance, String accountNumber, String iban) {
+                    double balance, String accountNumber, String iban,
+                    String cardNumber, String cvv, String cardExpiry) {
         this.name = name;
         this.age = age;
         this.gender = gender;
@@ -54,6 +61,9 @@ public class Customer {
         this.balance = balance;
         this.accountNumber = accountNumber;
         this.iban = iban;
+        this.cardNumber = cardNumber;
+        this.cvv = cvv;
+        this.cardExpiry = cardExpiry;
     }
 
     // Getters and Setters
@@ -144,5 +154,29 @@ public class Customer {
 
     public void setIban(String iban) {
         this.iban = iban;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
+    }
+
+    public String getCvv() {
+        return cvv;
+    }
+
+    public void setCvv(String cvv) {
+        this.cvv = cvv;
+    }
+
+    public String getCardExpiry() {
+        return cardExpiry;
+    }
+
+    public void setCardExpiry(String cardExpiry) {
+        this.cardExpiry = cardExpiry;
     }
 }

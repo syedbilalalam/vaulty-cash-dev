@@ -6,6 +6,9 @@ import com.vaultycash.app.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.mindrot.jbcrypt.BCrypt;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Random;
 
 @Service
 public class CustomerService {
@@ -46,6 +49,17 @@ public class CustomerService {
         String accountNumber = "ACC" + (count + 1);
         String iban = "PK00BANK" + (count + 1);
 
+        // Generate card details
+        Random rand = new Random();
+        StringBuilder cardBuilder = new StringBuilder("4");
+        for (int i = 0; i < 15; i++) {
+            cardBuilder.append(rand.nextInt(10));
+        }
+        String cardNumber = cardBuilder.toString();
+        String cvv = String.format("%03d", rand.nextInt(1000));
+        LocalDate expiry = LocalDate.now().plusYears(5);
+        String cardExpiry = expiry.format(DateTimeFormatter.ofPattern("MM/yy"));
+
         Customer customer = new Customer(
                 request.getName(),
                 request.getAge(),
@@ -53,10 +67,13 @@ public class CustomerService {
                 request.getEmail(),
                 request.getPhone(),
                 BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()),
-                request.getPin(),
+                BCrypt.hashpw(request.getPin(), BCrypt.gensalt()),
                 request.getBalance(),
                 accountNumber,
-                iban
+                iban,
+                cardNumber,
+                cvv,
+                cardExpiry
         );
 
         Customer saved = customerRepository.save(customer);
@@ -68,8 +85,27 @@ public class CustomerService {
         Customer customer = customerRepository.findByPhoneNumber(request.getPhone())
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect phone number or password."));
 
-        if (!BCrypt.checkpw(request.getPassword(), customer.getPassword())) {
+        boolean passwordMatches = false;
+        boolean needsUpgrade = false;
+
+        try {
+            passwordMatches = BCrypt.checkpw(request.getPassword(), customer.getPassword());
+        } catch (IllegalArgumentException e) {
+            // Not a valid BCrypt hash (legacy plaintext password)
+            if (customer.getPassword().equals(request.getPassword())) {
+                passwordMatches = true;
+                needsUpgrade = true; // Upgrade the plaintext password to BCrypt
+            }
+        }
+
+        if (!passwordMatches) {
             throw new IllegalArgumentException("Incorrect phone number or password.");
+        }
+
+        // Seamlessly upgrade plaintext passwords to BCrypt
+        if (needsUpgrade) {
+            customer.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
+            customerRepository.save(customer);
         }
 
         return toLoginResponse(customer);
@@ -128,7 +164,21 @@ public class CustomerService {
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found."));
 
-        if (!customer.getPin().equals(request.getOldPin())) {
+        boolean pinMatches = false;
+        if (customer.getPin().length() == 4 && customer.getPin().matches("\\d{4}")) {
+            // Fallback for plaintext old pins
+            if (customer.getPin().equals(request.getOldPin())) {
+                pinMatches = true;
+            }
+        } else {
+            try {
+                pinMatches = BCrypt.checkpw(request.getOldPin(), customer.getPin());
+            } catch (Exception e) {
+                pinMatches = false;
+            }
+        }
+
+        if (!pinMatches) {
             throw new IllegalArgumentException("Current PIN is incorrect.");
         }
         if (request.getNewPin() == null || !request.getNewPin().matches("\\d{4}")) {
@@ -138,11 +188,25 @@ public class CustomerService {
             throw new IllegalArgumentException("PINs do not match.");
         }
 
-        customer.setPin(request.getNewPin());
+        customer.setPin(BCrypt.hashpw(request.getNewPin(), BCrypt.gensalt()));
         customerRepository.save(customer);
     }
 
     private LoginResponse toLoginResponse(Customer customer) {
+        if (customer.getCardNumber() == null || customer.getCardNumber().isBlank()) {
+            Random rand = new Random();
+            StringBuilder cardBuilder = new StringBuilder("4");
+            for (int i = 0; i < 15; i++) {
+                cardBuilder.append(rand.nextInt(10));
+            }
+            customer.setCardNumber(cardBuilder.toString());
+            customer.setCvv(String.format("%03d", rand.nextInt(1000)));
+            customer.setCardExpiry(LocalDate.now().plusYears(5).format(DateTimeFormatter.ofPattern("MM/yy")));
+            customerRepository.save(customer);
+        }
+
+        String maskedCard = "**** **** **** " + customer.getCardNumber().substring(12);
+
         return new LoginResponse(
                 customer.getId(),
                 customer.getName(),
@@ -150,10 +214,11 @@ public class CustomerService {
                 customer.getGender(),
                 customer.getEmail(),
                 customer.getPhoneNumber(),
-                customer.getPin(),
                 customer.getBalance(),
                 customer.getAccountNumber(),
-                customer.getIban()
+                customer.getIban(),
+                maskedCard,
+                customer.getCardExpiry()
         );
     }
 }

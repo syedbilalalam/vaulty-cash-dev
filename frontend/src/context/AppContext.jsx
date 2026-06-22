@@ -48,22 +48,34 @@ export function AppProvider({ children }) {
   const registerCustomer = useCallback(async (data) => {
     const { name, age, gender, email, phone, password, pin, balance } = data;
     if (!name?.trim() || !age || !gender?.trim() || !email?.trim() || !phone?.trim() || !password?.trim() || pin === '' || pin === undefined || pin === null) {
-      showToast('Please fill in all fields.', 'error'); return;
+      showToast('Please fill in all fields.', 'error'); return false;
     }
-    if (password.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
-    if (!/^\d{4}$/.test(pin)) { showToast('PIN must be exactly 4 digits.', 'error'); return; }
-    if (age < 18) { showToast('You must be at least 18 years old.', 'error'); return; }
+    
+    // Auto-format phone: if user typed 10 digits (e.g. 3001234567), prepend 0 to make it 11 digits (03001234567)
+    let processedPhone = phone.replace(/\s/g, '');
+    if (processedPhone.length === 10 && processedPhone.startsWith('3')) {
+      processedPhone = '0' + processedPhone;
+    }
+
+    if (!/^\d{11}$/.test(processedPhone)) {
+      showToast('Phone number must be exactly 11 digits (e.g. 03XXXXXXXXX).', 'error'); return false;
+    }
+    if (password.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return false; }
+    if (!/^\d{4}$/.test(pin)) { showToast('PIN must be exactly 4 digits.', 'error'); return false; }
+    if (age < 18) { showToast('You must be at least 18 years old.', 'error'); return false; }
 
     const res = await apiCall('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, age: Number(age), gender, email, phone, password, pin: pin.toString(), balance: Number(balance) || 0 }),
+      body: JSON.stringify({ name, age: Number(age), gender, email, phone: processedPhone, password, pin: pin.toString(), balance: Number(balance) || 0 }),
     });
 
     if (res.success) {
       showToast(res.message, 'success');
       showScreen('login');
+      return true;
     } else {
       showToast(res.message, 'error');
+      return false;
     }
   }, [showToast, showScreen, apiCall]);
 
@@ -77,8 +89,10 @@ export function AppProvider({ children }) {
       setCurrentCustomer(res.data);
       showToast(`Welcome back, ${res.data.name}!`, 'success');
       showScreen('dashboard');
+      return true;
     } else {
       showToast(res.message, 'error');
+      return false;
     }
   }, [showToast, showScreen, apiCall]);
 
@@ -97,7 +111,7 @@ export function AppProvider({ children }) {
       method: 'POST',
       body: JSON.stringify({
         senderId: currentCustomer.id,
-        receiverAccountNumber: accNum,
+        receiverIdentifier: accNum,
         amount: Number(amount),
         pin: pin.toString(),
       }),
@@ -113,12 +127,13 @@ export function AppProvider({ children }) {
     }
   }, [currentCustomer, showToast, apiCall, refreshCustomer]);
 
-  const depositMoney = useCallback(async (amount) => {
+  const depositMoney = useCallback(async (amount, pin, depositMethod) => {
     if (isNaN(amount) || amount <= 0) { showToast('Enter a valid amount.', 'error'); return false; }
+    if (!pin) { showToast('Enter your PIN.', 'error'); return false; }
 
     const res = await apiCall('/transaction/deposit', {
       method: 'POST',
-      body: JSON.stringify({ customerId: currentCustomer.id, amount: Number(amount) }),
+      body: JSON.stringify({ customerId: currentCustomer.id, amount: Number(amount), pin: pin.toString(), depositMethod }),
     });
 
     if (res.success) {
@@ -214,6 +229,20 @@ export function AppProvider({ children }) {
     return [];
   }, [currentCustomer, apiCall]);
 
+  const getCardDetails = useCallback(async (pin) => {
+    if (!pin) { showToast('Enter your PIN.', 'error'); return null; }
+    const res = await apiCall(`/account/${currentCustomer.id}/card`, {
+      method: 'POST',
+      body: JSON.stringify({ customerId: currentCustomer.id, pin: pin.toString() }),
+    });
+    if (res.success) {
+      return res.data;
+    } else {
+      showToast(res.message, 'error');
+      return null;
+    }
+  }, [currentCustomer, showToast, apiCall]);
+
   return (
     <AppContext.Provider value={{
       currentCustomer,
@@ -223,7 +252,7 @@ export function AppProvider({ children }) {
       registerCustomer, loginCustomer, logout,
       transferMoney, depositMoney, withdrawMoney,
       changePassword, changePIN, editInfo,
-      getMyTransactions,
+      getMyTransactions, getCardDetails,
     }}>
       {children}
     </AppContext.Provider>

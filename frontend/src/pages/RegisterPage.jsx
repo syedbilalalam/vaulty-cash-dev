@@ -10,13 +10,23 @@ export default function RegisterPage() {
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
-  const handleSubmit = () => {
-    registerCustomer({
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    const ok = await registerCustomer({
       ...form,
       age: parseInt(form.age),
       pin: form.pin,
       balance: parseFloat(form.balance),
     });
+    setLoading(false);
+    if (ok) {
+      setForm({
+        name: '', age: '', gender: '', email: '', phone: '',
+        password: '', pin: '', balance: '',
+      });
+    }
   };
 
   return (
@@ -52,7 +62,19 @@ export default function RegisterPage() {
         </div>
         <div className="form-group">
           <label>Phone Number</label>
-          <input type="tel" placeholder="03XX-XXXXXXX" value={form.phone} onChange={set('phone')} />
+          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,.06)', border: '1.5px solid rgba(255,255,255,.1)', borderRadius: 'var(--r-sm)' }}>
+            <span style={{ padding: '0 14px', color: 'var(--slate)', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '6px', borderRight: '1px solid rgba(255,255,255,.1)' }}>
+              🇵🇰 <span style={{ fontSize: '.9rem', fontWeight: 500 }}>+92</span>
+            </span>
+            <input
+              type="tel"
+              placeholder="3XX XXXXXXX"
+              value={form.phone}
+              onChange={set('phone')}
+              style={{ border: 'none', background: 'transparent', flex: 1 }}
+              maxLength="10"
+            />
+          </div>
         </div>
         <div className="form-group">
           <label>Password</label>

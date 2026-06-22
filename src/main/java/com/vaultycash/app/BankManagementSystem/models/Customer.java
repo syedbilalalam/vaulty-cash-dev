@@ -4,10 +4,6 @@
  */
 package com.vaultycash.app.BankManagementSystem.models;
 
-/**
- *
- * @author Muhammad
- */
 public class Customer {
     private String name;
     private int age;
@@ -151,5 +147,3 @@ public class Customer {
         System.out.println("IBAN: " + iban);
     }
 }
-    
-

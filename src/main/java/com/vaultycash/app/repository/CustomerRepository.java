@@ -13,6 +13,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     Optional<Customer> findByAccountNumber(String accountNumber);
 
+    Optional<Customer> findByIban(String iban);
+
     boolean existsByPhoneNumber(String phoneNumber);
 
     long count();

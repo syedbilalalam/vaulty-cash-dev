@@ -6,6 +6,7 @@ export default function TransferPanel() {
   const [accNum, setAccNum] = useState('');
   const [amount, setAmount] = useState('');
   const [pin, setPin] = useState('');
+  const [transferType, setTransferType] = useState('account'); // 'account' or 'iban'
 
   const handleTransfer = async () => {
     const ok = await transferMoney(accNum, parseFloat(amount), pin);
@@ -16,9 +17,19 @@ export default function TransferPanel() {
     <div>
       <div className="section-title">💸 Bank Transfer</div>
       <div className="card" style={{ maxWidth: 500 }}>
+        <div className="form-group" style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <input type="radio" name="transferType" checked={transferType === 'account'} onChange={() => setTransferType('account')} />
+            Account Number
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <input type="radio" name="transferType" checked={transferType === 'iban'} onChange={() => setTransferType('iban')} />
+            IBAN Number
+          </label>
+        </div>
         <div className="form-group">
-          <label>Receiver's Account Number</label>
-          <input type="text" placeholder="e.g. ACC2" value={accNum} onChange={e => setAccNum(e.target.value)} />
+          <label>Receiver's {transferType === 'account' ? "Account Number" : "IBAN Number"}</label>
+          <input type="text" placeholder={transferType === 'account' ? "e.g. ACC2" : "e.g. PK00BANK2"} value={accNum} onChange={e => setAccNum(e.target.value)} />
         </div>
         <div className="form-group">
           <label>Amount (PKR)</label>

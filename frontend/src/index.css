@@ -213,7 +213,6 @@ select option { background: var(--navy2); }
   width: 200px; height: 200px; border-radius: 50%;
   background: radial-gradient(circle, rgba(0,201,167,.15) 0%, transparent 70%);
 }
-.balance-label { font-size: .8rem; color: var(--slate); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
 .balance-amount {
   font-family: var(--font-display); font-size: 2.8rem;
   color: var(--white); margin-bottom: 20px; line-height: 1;
@@ -253,11 +252,17 @@ select option { background: var(--navy2); }
 
 /* TRANSACTIONS */
 .tx-list { display: flex; flex-direction: column; gap: 10px; }
+.tx-item-container {
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.06);
+  transition: border-color .2s;
+}
+.tx-item-container:hover { border-color: rgba(0,201,167,.25); }
+.tx-item-container.expanded { border-color: rgba(0,201,167,.3); }
 .tx-item {
   display: flex; align-items: center; gap: 14px;
   background: var(--card);
-  border: 1px solid rgba(255,255,255,.06);
-  border-radius: var(--r-sm);
   padding: 14px 18px;
 }
 .tx-icon {
@@ -275,7 +280,86 @@ select option { background: var(--navy2); }
 .tx-amount.credit   { color: var(--success); }
 .tx-amount.debit    { color: var(--error); }
 .tx-amount.transfer { color: #63B3ED; }
+.tx-details {
+  background: rgba(11,26,46,.6);
+  padding: 16px 18px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  font-size: .88rem;
+  color: var(--silver);
+  line-height: 1.7;
+  animation: slideDown .2s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 300px; }
+}
 .tx-empty { text-align: center; color: var(--slate); padding: 32px; font-size: .9rem; }
+
+/* EYE TOGGLE */
+.balance-label {
+  font-size: .8rem; color: var(--slate); text-transform: uppercase;
+  letter-spacing: .08em; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 10px;
+}
+.eye-toggle {
+  background: none; border: none; cursor: pointer;
+  color: var(--slate); padding: 2px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: color .2s;
+}
+.eye-toggle:hover { color: var(--teal); }
+
+/* VIRTUAL DEBIT CARD */
+.virtual-card {
+  width: 100%; max-width: 430px;
+  aspect-ratio: 1.586;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+  border-radius: 16px;
+  padding: 28px 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(0,201,167,.15);
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.virtual-card::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,201,167,.12) 0%, transparent 70%);
+}
+.virtual-card::after {
+  content: '';
+  position: absolute; bottom: -40px; left: -40px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,179,237,.08) 0%, transparent 70%);
+}
+.vc-chip { margin-bottom: 20px; z-index: 1; }
+.vc-number {
+  font-size: 1.35rem; letter-spacing: .18em;
+  color: var(--white); z-index: 1;
+  margin-bottom: 20px;
+  text-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.vc-bottom {
+  display: flex; gap: 24px; z-index: 1;
+  align-items: flex-end;
+}
+.vc-label {
+  font-size: .6rem; color: var(--slate);
+  text-transform: uppercase; letter-spacing: .1em;
+  margin-bottom: 2px;
+}
+.vc-value {
+  font-size: .85rem; color: var(--silver);
+  font-family: var(--font-mono); letter-spacing: .04em;
+}
+.vc-holder { flex: 1; }
+.vc-brand {
+  position: absolute; top: 24px; right: 28px;
+  font-family: var(--font-display); font-size: 1.1rem;
+  color: rgba(0,201,167,.5); letter-spacing: .15em;
+  z-index: 1;
+}
 
 /* PROFILE */
 .profile-header {

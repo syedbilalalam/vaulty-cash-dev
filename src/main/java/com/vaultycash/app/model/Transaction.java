@@ -26,6 +26,12 @@ public class Transaction {
     @Column(nullable = false)
     private LocalDateTime timestamp;
 
+    private String senderAccountNumber;
+    private String senderIban;
+    private String receiverAccountNumber;
+    private String receiverIban;
+    private String depositMethod;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
@@ -99,5 +105,45 @@ public class Transaction {
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
+    }
+
+    public String getSenderAccountNumber() {
+        return senderAccountNumber;
+    }
+
+    public void setSenderAccountNumber(String senderAccountNumber) {
+        this.senderAccountNumber = senderAccountNumber;
+    }
+
+    public String getSenderIban() {
+        return senderIban;
+    }
+
+    public void setSenderIban(String senderIban) {
+        this.senderIban = senderIban;
+    }
+
+    public String getReceiverAccountNumber() {
+        return receiverAccountNumber;
+    }
+
+    public void setReceiverAccountNumber(String receiverAccountNumber) {
+        this.receiverAccountNumber = receiverAccountNumber;
+    }
+
+    public String getReceiverIban() {
+        return receiverIban;
+    }
+
+    public void setReceiverIban(String receiverIban) {
+        this.receiverIban = receiverIban;
+    }
+
+    public String getDepositMethod() {
+        return depositMethod;
+    }
+
+    public void setDepositMethod(String depositMethod) {
+        this.depositMethod = depositMethod;
     }
 }

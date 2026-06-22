@@ -6,10 +6,16 @@ export default function LoginPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    loginCustomer(phone, password);
-    setPhone('');
-    setPassword('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setLoading(true);
+    const ok = await loginCustomer(phone, password);
+    setLoading(false);
+    if (ok) {
+      setPhone('');
+      setPassword('');
+    }
   };
 
   return (
